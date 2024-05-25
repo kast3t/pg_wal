@@ -15,6 +15,7 @@ services:
        - '/var/lib/postgresql/data'
        - ./docker/master.env:/app.env
        - ./main.py:/app/main.py
+       - ./agent.py:/app/agent.py
   pg-slave:
     build: '.'
     image: 'pg-wal'
@@ -29,6 +30,7 @@ services:
       - '/var/lib/postgresql/data'
       - ./docker/slave.env:/app.env
       - ./main.py:/app/main.py
+      - ./agent.py:/app/agent.py
     links:
      - 'pg-master'
   pg-arbiter:
@@ -44,3 +46,4 @@ services:
       - '/var/lib/postgresql/data'
       - ./docker/arbiter.env:/app.env
       - ./main.py:/app/main.py
+      - ./agent.py:/app/agent.py
