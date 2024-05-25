@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  pg-master:
+    build: '.'
+    image: 'pg-wal'
+    restart: 'always'
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "5432:5432"
+    expose:
+     - '5432'
+    volumes:
+       - '/var/lib/postgresql/data'
+       - ./docker/master.env:/app.env
+       - ./main.py:/app/main.py
+  pg-slave:
+    build: '.'
+    image: 'pg-wal'
+    restart: 'always'
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "5433:5432"
+    expose:
+     - '5432'
+    volumes:
+      - '/var/lib/postgresql/data'
+      - ./docker/slave.env:/app.env
+      - ./main.py:/app/main.py
+    links:
+     - 'pg-master'
+  pg-arbiter:
+    build: '.'
+    image: 'pg-wal'
+    restart: 'always'
+    cap_add:
+      - NET_ADMIN
+    expose:
+     - '5000'
+     - '5432'
+    volumes:
+      - '/var/lib/postgresql/data'
+      - ./docker/arbiter.env:/app.env
+      - ./main.py:/app/main.py
