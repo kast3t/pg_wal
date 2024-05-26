@@ -7,10 +7,10 @@ from psycopg2 import OperationalError
 from psycopg2._psycopg import connection
 
 
-def connectToDb(dbname: str, user: str, password: str, host: str) -> Union[connection, None]:
+def connectToDb(dbname: str, user: str, password: str, host: str, port: int = 5432) -> Union[connection, None]:
     try:
-        conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=5432)
-        print("Successfully connected to {}".format(host))
+        conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
+        print("Successfully connected to {}:{}".format(host, port))
         return conn
     except OperationalError as err:
         print("Error while creating connection to {}: {}".format(host, err))
@@ -46,16 +46,20 @@ class Agent:
         """
         print("Trying to init connections...")
 
-        for s in range(4):
-            if self.master and self.conn2master is None:
-                self.conn2master = connectToDb(self.dbname, self.user, self.password, self.master)
-            if self.slave and self.conn2slave is None:
-                self.conn2slave = connectToDb(self.dbname, self.user, self.password, self.slave)
+        if self.role == "Writer":
+            self.conn2master = connectToDb(self.dbname, self.user, self.password, self.master)
+            self.conn2slave = connectToDb(self.dbname, self.user, self.password, self.slave, 5433)
+        else:
+            for s in range(4):
+                if self.master and self.conn2master is None:
+                    self.conn2master = connectToDb(self.dbname, self.user, self.password, self.master)
+                if self.slave and self.conn2slave is None:
+                    self.conn2slave = connectToDb(self.dbname, self.user, self.password, self.slave)
 
-            if (self.master and not self.conn2master) or (self.slave and not self.conn2slave):
-                time.sleep(5)
-            else:
-                break
+                if (self.master and not self.conn2master) or (self.slave and not self.conn2slave):
+                    time.sleep(5)
+                else:
+                    break
 
     def checkConn2Master(self) -> bool:
         try:

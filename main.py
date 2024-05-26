@@ -31,7 +31,7 @@ def runSlave():
         statusAM = agent.checkConnA2M()
 
         if statusAM or statusAM is None:
-            time.sleep(5)
+            time.sleep(1)
         else:
             statusM = agent.checkConn2Master()
             print("Check if Master alive: {}".format(statusM))
